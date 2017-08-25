@@ -1,4 +1,5 @@
 [org 0x7c00]
+BITS 16
 
 mov bx, HELLO_MSG
 call print_string
