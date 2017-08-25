@@ -13,13 +13,19 @@ HEXOUT:
 mov bx, HELLO_MSG
 call print_string
 
+call print_string_newline
+
 mov bx, GOODBYE_MSG
 call print_string
 
-mov dx, 0x1f45
+call print_string_newline
+
+mov dx, 0x89ab
 call print_hex
 mov bx, HEXOUT
 call print_string
+
+call print_string_newline
 
 jmp $                     ; Jump to this address forever
 

@@ -1,45 +1,59 @@
-; manipulate the characters of HEXOUT ('0x0000', 0) to print a 16 bit value
+; manipulate the characters of HEXOUT ('0x0000', 0) to print an ascii value
 ; The incoming value is stored in dx
 
 ; dx = incoming value
-; cx = outgoing address
-; bx = iteration count / offset
-; ax = current value
+; cx = unused
+; bx = output (HEXOUT) offset 
+; ax = working register
 
 print_hex:
-  pusha                 ; Remember those registers
-  mov bx, 0x00          ; 0'th iterations
-  mov cx, HEXOUT + 0x2  ; look at the first value we need to modify
+  pusha                         ; Remember those registers
+  mov     bx,     0x02              ; 0'th iteration (Start from the second byte so we include the 0x already in the string)
 
-print_hex_loop:
-  push bx               ; store the iteration count too keep it out of the way
-  mov ax, dx            ; Get value of dx in to our working register ax
-  shr ax, 8             ; shift the high 8 bits in to the low 8 bits
-  and ax, 0x1           ; blank high 4 bits
+  ; First Byte
+  ; High Bits
+  mov     ax,     dx              ; copy dx in to working register ax
+  shr     ax,     8               ; Reading from left to right select the first 2 bytes
+  shr     ax,     4               ; rotate the bits to provide the 4 high bits
+  call  append_al
 
-  cmp ax, 0xa
-  je hex_number         ; 0-9 + 48
-  jge hex_string        ; a-f + 65 
+  ; Low Bits
+  mov     ax,     dx              ; copy dx in to working register ax
+  shr     ax,     8               ; Reading from left to right select the first 2 bytes
+  call    append_al
 
-print_hex_post_scale:
-  mov cx, ax
-  add [dx], 0x0001           ; loox at next value of incoming address
-  add [cx], 0x0001           ; Loox at the next value of the outgoing address
+  ; Second Byte
+  ; High Bits
+  mov     ax,     dx              ; copy dx in to working register ax
+  shr     ax,     4               ; rotate the bits to provide the 4 high bits
+  call    append_al
 
-  pop bx                ; restore the iteration count
-  add bx, 0x1           ; increment the iteration count
-  cmp bx, 0x3           ; 4 iterations only
-  je print_hex_end      ; quit after 4 iterations
-  jmp print_hex_loop    ; else process the next digit
+  ; Low Bits
+  mov     ax,     dx                  ; copy dx in to working register ax
+  call    append_al
 
-print_hex_end:
-  popa
+  popa  
+  ret
+
+append_al:
+  and     ax,     0x0F                ; blank the remaining 4 high bits
+  call    scale_number 
+  mov     [HEXOUT + bx], ax       ; write out byte to string
+  add     bx,     0x1             ; Increment the output poubter
+  ret
+
+scale_number:
+  cmp     ax,     0x0a              ; is the resulting digit more than 10?
+  jl      hex_number
+  jmp     hex_string
+
+scale_number_end:
   ret
 
 hex_number:
-  add ax, 0x30
-  jmp print_hex_post_scale
+  add     ax,     0x30              ; convert hex number to ascii code
+  jmp     scale_number_end
 
 hex_string:
-  add ax, 0x41
-  jmp print_hex_post_scale
+  add     ax,     0x37              ; convert hex character to ascii code
+  jmp     scale_number_end
