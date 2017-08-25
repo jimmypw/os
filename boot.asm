@@ -1,7 +1,10 @@
 [org 0x7c00]
 BITS 16
 
-mov [BOOTDRIVE], bl    ; Store the boot drive set by BIOS
+mov       [BOOTDRIVE], bl       ; Store the boot drive set by BIOS
+
+mov       bp,       0x8000      ; Set up the base pointer
+mov       sp,       bp          ; and the stack pointer
 
 mov       bx,       HELLO_MSG
 call      println
