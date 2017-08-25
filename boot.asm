@@ -10,24 +10,19 @@ GOODBYE_MSG:
 HEXOUT:
   db "0x0000", 0
 
-mov bx, HELLO_MSG
-call print_string
+mov       bx,       HELLO_MSG
+call      println
 
-call print_string_newline
+mov       bx,       GOODBYE_MSG
+call      println
 
-mov bx, GOODBYE_MSG
-call print_string
+mov       dx,       0xbee1
+call      print_hex_16
 
-call print_string_newline
+mov       bx,       HEXOUT
+call      println
 
-mov dx, 0x89ab
-call print_hex
-mov bx, HEXOUT
-call print_string
-
-call print_string_newline
-
-jmp $                     ; Jump to this address forever
+jmp       $                     ; Jump to this address forever
 
 %include "print_string.asm"
 %include "print_hex.asm"
